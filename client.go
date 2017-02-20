@@ -8,6 +8,7 @@ import (
 	"net/http/cookiejar"
 	"net/rpc"
 	"net/url"
+	"time"
 )
 
 type Client struct {
@@ -125,6 +126,39 @@ func NewClient(requrl string, transport http.RoundTripper) (*Client, error) {
 	}
 
 	httpClient := &http.Client{Transport: transport}
+
+	jar, err := cookiejar.New(nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := url.Parse(requrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	codec := clientCodec{
+		url:        u,
+		httpClient: httpClient,
+		ready:      make(chan *uint64),
+		responses:  make(map[uint64]*http.Response),
+		cookies:    jar,
+	}
+
+	return &Client{rpc.NewClientWithCodec(&codec)}, nil
+}
+
+func NewClient2(requrl string, transport http.RoundTripper, timeout time.Duration) (*Client, error) {
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+
+	httpClient := &http.Client{
+		Transport: transport,
+		Timeout:   timeout,
+	}
 
 	jar, err := cookiejar.New(nil)
 
