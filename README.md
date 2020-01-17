@@ -1,3 +1,6 @@
+# [DEPRECATED]
+This repo is no longer in use
+
 ## Overview
 
 xmlrpc is an implementation of client side part of XMLRPC protocol in Go language.
